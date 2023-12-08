@@ -1,117 +1,261 @@
-// let shapeId = 0
-
+import { sendSequenceNextSignal } from "../../shared/sequenceRunner.js";
+import { DragManager } from "../../shared/dragManager.js";
 import { SpringNumber } from "../../shared/spring.js";
 
-const spring = new SpringNumber({
-  position: 0, // start position
-  frequency: 0.7, // oscillations per second (approximate)
-  halfLife: 0.1, // time until amplitude is halved
-});
+let shapeId = 0;
 
-let mySound;
-let clickX = 0;
-let clickY = 0;
-let dragging = false;
-let onVertex = false;
+let square;
+let Sound;
+
+// class Point {
+//   constructor(vector, draggable) {
+//     this.vector = vector;
+//     this.draggable = draggable;
+//   }
+// }
+
+window.preload = function () {
+  Sound = loadSound("../sounds/blob.m4a");
+  console.log("Sound loaded");
+};
+
+class Shape {
+  constructor(points) {
+    this.dragManager = new DragManager();
+    this.ogPoints = points;
+    this.pointsDrag = [];
+    this.strokeW = 20;
+
+    this.countCenter = 0;
+
+    this.strokeSpring = new SpringNumber({
+      position: 0, // start position
+      frequency: 2.5, // oscillations per second (approximate)
+      halfLife: 0.15, // time until amplitude is halved
+    });
+
+    this.ogPoints.forEach((point, index) => {
+      if (point.draggable) {
+        this.pointsDrag.push({
+          springX: new SpringNumber({
+            position: point.vector.x, // start position
+            frequency: 2.5, // oscillations per second (approximate)
+            halfLife: 0.15, // time until amplitude is halved
+          }),
+          springY: new SpringNumber({
+            position: point.vector.y, // start position
+            frequency: 2.5, // oscillations per second (approximate)
+            halfLife: 0.15, // time until amplitude is halved
+          }),
+          grabObject: this.dragManager.createDragObject({
+            target: {
+              positionX: point.vector.x,
+              positionY: point.vector.y,
+              radius: 40,
+            },
+            onStartDrag: (o) => {
+              cursor("grabbing");
+              console.log("start drag :" + o);
+            },
+            onStopDrag: (o) => {
+              cursor("default");
+              console.log("stop drag :" + o);
+            },
+          }),
+        });
+      } else {
+        this.pointsDrag.push({
+          springX: new SpringNumber({
+            position: point.vector.x, // start position
+            frequency: 2.5, // oscillations per second (approximate)
+            halfLife: 0.15, // time until amplitude is halved
+          }),
+          springY: new SpringNumber({
+            position: point.vector.y, // start position
+            frequency: 2.5, // oscillations per second (approximate)
+            halfLife: 0.15, // time until amplitude is halved
+          }),
+        });
+      }
+
+      console.log(this.pointsDrag);
+    });
+  }
+
+  update() {
+    this.strokeSpring.step(deltaTime / 1000);
+
+    this.pointsDrag.forEach((point, index) => {
+      if (point.grabObject) {
+        point.springX.target = point.grabObject.target.positionX;
+        point.springY.target = point.grabObject.target.positionY;
+      }
+
+      point.springX.step(deltaTime / 1000);
+      point.springY.step(deltaTime / 1000);
+    });
+
+    // test all point if close to center within a certain radius
+    this.pointsDrag.some((point, index) => {
+      if (
+        point.grabObject &&
+        dist(
+          point.grabObject.target.positionX,
+          point.grabObject.target.positionY,
+          width / 2,
+          height / 2
+        ) < 100
+      ) {
+        point.grabObject = false;
+        point.springX.target = width / 2;
+        point.springY.target = height / 2;
+
+        this.countCenter++;
+
+        if (this.countCenter === 1) {
+          Sound.play();
+        }
+        if (this.countCenter === 2) {
+          Sound.play();
+        }
+        if (this.countCenter === 3) {
+          Sound.play();
+        }
+        if (this.countCenter === 4) {
+          Sound.play();
+        }
+
+        if (this.countCenter > 0)
+          this.strokeSpring.target =
+            this.strokeSpring.position + this.strokeW / 4;
+
+        if (this.countCenter === 4) {
+          setTimeout(() => {
+            sendSequenceNextSignal();
+            noLoop();
+          }, 2000); // Wait for 3 seconds
+        }
+      }
+    });
+  }
+
+  display() {
+    push();
+    fill(0);
+    stroke(0);
+    strokeWeight(this.strokeSpring.position);
+    strokeJoin(ROUND);
+
+    beginShape();
+    this.pointsDrag.forEach((point) => {
+      vertex(point.springX.position, point.springY.position);
+      // push();
+      // fill(255, 0, 0);
+      // circle(point.springX.position, point.springY.position, 40);
+      // pop();
+    });
+
+    endShape(CLOSE);
+    pop();
+  }
+}
 
 window.setup = function () {
   createCanvas(windowWidth, windowHeight);
-  angleMode(DEGREES);
-  mySound = loadSound("./sound/blob.m4a");
-};
 
-window.windowResized = function () {
-  resizeCanvas(windowWidth, windowHeight);
-};
-
-window.mousePressed = function () {
-  clickX = mouseX;
-  clickY = mouseY;
-
-  if (onVertex) dragging = true;
-};
-
-window.mouseReleased = function () {
-  dragging = false;
-};
-
-window.draw = function () {
-  background(255);
   const sceneSize = min(width, height);
 
   const centerX = width / 2;
   const centerY = height / 2;
   const objSize = sceneSize / 2;
-  const halfWidth = objSize / tan(60);
-  const pointSize = 20 + spring.position;
-  const strokeW = 20;
+  // const halfWidth = objSize / tan(60);
+  const halfWidth = objSize / 2;
 
-  const vertices = [
-    createVector(centerX - halfWidth, centerY - halfWidth),
-    createVector(centerX, centerY - halfWidth),
-    createVector(centerX + halfWidth, centerY - halfWidth),
-    createVector(centerX + halfWidth, centerY),
-    createVector(centerX + halfWidth, centerY + halfWidth),
-    createVector(centerX, centerY + halfWidth),
-    createVector(centerX - halfWidth, centerY + halfWidth),
-    createVector(centerX - halfWidth, centerY),
-  ];
+  square = new Shape([
+    {
+      vector: createVector(centerX - halfWidth, centerY - halfWidth),
+      draggable: true,
+    },
+    {
+      vector: createVector(centerX, centerY - halfWidth),
+      draggable: false,
+    },
+    {
+      vector: createVector(centerX + halfWidth, centerY - halfWidth),
+      draggable: true,
+    },
+    {
+      vector: createVector(centerX + halfWidth, centerY),
+      draggable: false,
+    },
+    {
+      vector: createVector(centerX + halfWidth, centerY + halfWidth),
+      draggable: true,
+    },
+    {
+      vector: createVector(centerX, centerY + halfWidth),
+      draggable: false,
+    },
+    {
+      vector: createVector(centerX - halfWidth, centerY + halfWidth),
+      draggable: true,
+    },
+    {
+      vector: createVector(centerX - halfWidth, centerY),
+      draggable: false,
+    },
+  ]);
 
-  onVertex = false;
-  for (const vertex of vertices) {
-    if (dist(mouseX, mouseY, vertex.x, vertex.y) < 25) {
-      cursor("grab");
-      onVertex = true;
-      break;
-    } else {
-      cursor("default");
-    }
-  }
-  console.log(onVertex);
+  // createVector(centerX - halfWidth, centerY - halfWidth),
+  // createVector(centerX, centerY - halfWidth),
+  // createVector(centerX + halfWidth, centerY - halfWidth),
+  // createVector(centerX + halfWidth, centerY),
+  // createVector(centerX + halfWidth, centerY + halfWidth),
+  // createVector(centerX, centerY + halfWidth),
+  // createVector(centerX - halfWidth, centerY + halfWidth),
+  // createVector(centerX - halfWidth, centerY),
 
-  if (dragging) {
-    cursor("grabbing");
-    for (let i = 0; i < vertices.length; i++) {
-      vertices[i].x += mouseX - clickX;
-      vertices[i].y += mouseY - clickY;
-    }
-  }
+  // dragManager.createDragObject({
+  //   target: {
+  //     positionX: width / 2,
+  //     positionY: height / 2,
+  //     radius: 200,
+  //   },
+  //   onStartDrag: (o) => {
+  //     console.log("start drag");
+  //   },
+  //   onStopDrag: (o) => {
+  //     console.log("stop drag");
+  //   },
+  // });
 
-  beginShape();
-  fill(0);
-  for (let i = 0; i < vertices.length; i++) {
-    vertex(vertices[i].x, vertices[i].y);
-  }
-  endShape(CLOSE);
+  // angleMode(DEGREES);
+};
 
-  strokeWeight(4);
-  circle(centerX, centerY, 1);
+window.mouseClicked = function () {
+  // shapeId++
+  // shapeId %= 4
+};
 
-  // strokeWeight(4);
-  // stroke(51);
-  // noFill();
-  // beginShape();
-  // // vertex(mouseX, mouseY);
-  // vertex(centerX - halfWidth, centerY - halfWidth);
-  // vertex(centerX, centerY - halfWidth);
-  // vertex(centerX + halfWidth, centerY - halfWidth);
-  // vertex(centerX + halfWidth, centerY);
-  // vertex(centerX + halfWidth, centerY + halfWidth);
-  // vertex(centerX, centerY + halfWidth);
-  // vertex(centerX - halfWidth, centerY + halfWidth);
-  // vertex(centerX - halfWidth, centerY);
-  // endShape(CLOSE);
+window.draw = function () {
+  background(255);
 
-  // rectMode(CENTER);
-  // rect(centerX, centerY, objSize, objSize);
+  // dragManager.update();
+  // console.log(dragManager.currentDragObject);
+  //console.log(dragManager.currentDragObject);
+  square.dragManager.update();
+  square.update();
+  square.display();
 
-  // mySound.play();
-
-  spring.target = pointSize;
-  spring.step(deltaTime / 100); // deltaTime is in milliseconds, we need it in seconds
-
-  // tracking mouse
   // fill(255, 0, 0);
-  // noStroke();
-  // text("(" + mouseX + ", " + mouseY + ")", mouseX, mouseY);
+  // if (dragManager.currentDragObject)
+  //   circle(
+  //     dragManager.currentDragObject.target.positionX,
+  //     dragManager.currentDragObject.target.positionY,
+  //     50
+  //   );
+};
+
+window.windowResized = function () {
+  resizeCanvas(windowWidth, windowHeight);
 };

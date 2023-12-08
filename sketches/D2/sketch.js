@@ -1,5 +1,6 @@
 // let shapeId = 0
 
+import { sendSequenceNextSignal } from "../../shared/sequenceRunner.js";
 import { SpringNumber } from "../../shared/spring.js";
 
 const scaleSpring = new SpringNumber({
@@ -7,6 +8,13 @@ const scaleSpring = new SpringNumber({
   frequency: 0.7, // oscillations per second (approximate)
   halfLife: 0.1, // time until amplitude is halved
 });
+
+let Sound;
+
+window.preload = function () {
+  Sound = loadSound("../sounds/blob.m4a");
+  console.log("Sound loaded");
+};
 
 class Circle {
   constructor(x, y, s, pointSize) {
@@ -48,21 +56,18 @@ class Circle {
       // this.r = 0;
       this.spring.target = 1;
       // this.s = 7.5;
-      // console.log("Inside");
     } else {
       return false;
     }
   }
 }
 
-let mySound;
 let posList = [];
 let isFinished = false;
 
 window.setup = function () {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
-  mySound = loadSound("./sound/blob.m4a");
   background(255);
 
   const sceneSize = min(width, height);
@@ -108,6 +113,7 @@ window.draw = function () {
 
   posList.forEach((element) => {
     element.update();
+    // Check if the spring position of the element is greater than or equal to a threshold
   });
 
   isFinished = posList.every((element) => {
@@ -118,6 +124,11 @@ window.draw = function () {
     const cellSize = objSize / gridCount;
     const cellSizeBig = objSize / (gridCount - 1);
     scaleSpring.target = cellSize / cellSizeBig;
+
+    setTimeout(() => {
+      sendSequenceNextSignal();
+      noLoop();
+    }, 3000);
   }
 
   scaleSpring.step(deltaTime / 1000); // deltaTime is in milliseconds, we need it in seconds
@@ -131,6 +142,8 @@ window.draw = function () {
 
   posList.forEach((element) => {
     element.draw();
+    Sound.play();
+    console.log("sound on");
   });
   /*
   for (let x = 0; x < gridCount; x++) {
