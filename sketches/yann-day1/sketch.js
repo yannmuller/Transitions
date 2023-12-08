@@ -91,7 +91,7 @@ window.draw = function () {
     console.log("Finished");
     pointSize = firstCircleSize; // Replace with the size of your first circle
   } else if (gridCountX > 1 && gridCountY > 1) {
-    pointSize = pointSize * 4; // Replace with the size you want when the grid is bigger than 1x1
+    pointSize = pointSize; // Replace with the size you want when the grid is bigger than 1x1
   } else {
     pointSize = min(pointSizeX, pointSizeY);
   }

@@ -155,11 +155,11 @@ window.draw = function () {
     const cellSizeBig = objSize / (gridCount - 1);
     scaleSpring.target = cellSize / cellSizeBig;
 
-    noLoop();
-
     setTimeout(() => {
       sendSequenceNextSignal();
-    }, 1000);
+    }, 3500);
+
+    // noLoop();
   }
 
   scaleSpring.step(deltaTime / 1000); // deltaTime is in milliseconds, we need it in seconds

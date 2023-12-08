@@ -133,10 +133,10 @@ class Shape {
             this.strokeSpring.position + this.strokeW / 4;
 
         if (this.countCenter === 4) {
-          noLoop();
+          // noLoop();
           setTimeout(() => {
             sendSequenceNextSignal();
-          }, 2000); // Wait for 3 seconds
+          }, 400); // Wait for 3 seconds
         }
       }
     });
