@@ -15,10 +15,10 @@ let sound1, sound2, sound3, sound4;
 // }
 
 window.preload = function () {
-  sound1 = loadSound("../sounds/pop-01.mp3");
-  sound2 = loadSound("../sounds/pop-02.mp3");
-  sound3 = loadSound("../sounds/pop-03.mp3");
-  sound4 = loadSound("../sounds/pop-04.mp3");
+  sound1 = loadSound("./sound/pop-01.mp3");
+  sound2 = loadSound("./sound/pop-02.mp3");
+  sound3 = loadSound("./sound/pop-03.mp3");
+  sound4 = loadSound("./sound/pop-04.mp3");
   console.log("Sound loaded");
 };
 

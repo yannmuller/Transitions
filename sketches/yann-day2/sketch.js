@@ -12,7 +12,7 @@ const scaleSpring = new SpringNumber({
 let mysound;
 
 window.preload = function () {
-  mysound = loadSound("../sounds/blob.wav");
+  mysound = loadSound("./sound/bubble.mp3");
   console.log("Sound loaded");
 };
 

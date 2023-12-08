@@ -22,7 +22,7 @@ let prevGridState = "";
 let isFinished = false;
 
 window.preload = function () {
-  Sound = loadSound("../sounds/blob.m4a");
+  Sound = loadSound("./sound/blob.wav");
   console.log("Sound loaded");
 };
 
