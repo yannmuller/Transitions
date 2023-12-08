@@ -9,11 +9,17 @@ const scaleSpring = new SpringNumber({
   halfLife: 0.1, // time until amplitude is halved
 });
 
-let Sound;
+let mysound;
 
 window.preload = function () {
-  Sound = loadSound("../sounds/blob.m4a");
+  mysound = loadSound("../sounds/blob.wav");
   console.log("Sound loaded");
+};
+
+window.mousePressed = function () {
+  // playing a sound file on a user gesture
+  // is equivalent to `userStartAudio()`
+  //mysound.play();
 };
 
 class Circle {
@@ -21,6 +27,9 @@ class Circle {
     this.x = x;
     this.y = y;
     this.squareSize = s;
+    this.played = false;
+    this.sound = mysound;
+    this.sound.setVolume(1);
     this.pointSize = pointSize;
     this.spring = new SpringNumber({
       position: 0, // start position
@@ -45,18 +54,37 @@ class Circle {
       this.pointSize,
       this.squareSize + 1
     );
-    let radius = map(this.spring.position, 0, 1, 10, 0, true);
+    let radius = map(this.spring.position, 0, 1, 100, 0, true);
     rect(this.x, this.y, size, size, radius);
   }
 
   isInMe(inputX, inputY) {
     let d = dist(inputX, inputY, this.x, this.y);
     if (d <= this.pointSize + 60) {
+      if (!this.played) {
+        console.log("in");
+        this.sound.play();
+
+        this.played = true;
+      }
       // console.log("in" + pos.x);
       // this.r = 0;
       this.spring.target = 1;
       // this.s = 7.5;
     } else {
+      return false;
+    }
+  }
+
+  isHover(inputX, inputY) {
+    let d = dist(inputX, inputY, this.x, this.y);
+    if (d <= this.pointSize + 60) {
+      this.pointSize = 30;
+
+      // this.s = 7.5;
+    } else {
+      this.pointSize = 20;
+
       return false;
     }
   }
@@ -69,6 +97,8 @@ window.setup = function () {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
   background(255);
+
+  mysound.play();
 
   const sceneSize = min(width, height);
   const centerX = width / 2;
@@ -125,10 +155,11 @@ window.draw = function () {
     const cellSizeBig = objSize / (gridCount - 1);
     scaleSpring.target = cellSize / cellSizeBig;
 
+    noLoop();
+
     setTimeout(() => {
       sendSequenceNextSignal();
-      noLoop();
-    }, 3000);
+    }, 1000);
   }
 
   scaleSpring.step(deltaTime / 1000); // deltaTime is in milliseconds, we need it in seconds
@@ -142,8 +173,6 @@ window.draw = function () {
 
   posList.forEach((element) => {
     element.draw();
-    Sound.play();
-    console.log("sound on");
   });
   /*
   for (let x = 0; x < gridCount; x++) {
@@ -180,10 +209,19 @@ window.draw = function () {
 };
 
 window.mouseMoved = function () {
+  const centerX = width / 2;
+  const centerY = height / 2;
   //isInMe();
   posList.forEach((element) => {
-    const centerX = width / 2;
-    const centerY = height / 2;
+    element.isHover(mouseX - centerX, mouseY - centerY);
+  });
+};
+
+window.mouseDragged = function () {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  //isInMe();
+  posList.forEach((element) => {
     element.isInMe(mouseX - centerX, mouseY - centerY);
   });
 };

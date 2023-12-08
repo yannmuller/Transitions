@@ -5,7 +5,7 @@ import { SpringNumber } from "../../shared/spring.js";
 let shapeId = 0;
 
 let square;
-let Sound;
+let sound1, sound2, sound3, sound4;
 
 // class Point {
 //   constructor(vector, draggable) {
@@ -15,7 +15,10 @@ let Sound;
 // }
 
 window.preload = function () {
-  Sound = loadSound("../sounds/blob.m4a");
+  sound1 = loadSound("../sounds/pop-01.mp3");
+  sound2 = loadSound("../sounds/pop-02.mp3");
+  sound3 = loadSound("../sounds/pop-03.mp3");
+  sound4 = loadSound("../sounds/pop-04.mp3");
   console.log("Sound loaded");
 };
 
@@ -113,16 +116,16 @@ class Shape {
         this.countCenter++;
 
         if (this.countCenter === 1) {
-          Sound.play();
+          sound1.play();
         }
         if (this.countCenter === 2) {
-          Sound.play();
+          sound2.play();
         }
         if (this.countCenter === 3) {
-          Sound.play();
+          sound3.play();
         }
         if (this.countCenter === 4) {
-          Sound.play();
+          sound4.play();
         }
 
         if (this.countCenter > 0)
@@ -130,9 +133,9 @@ class Shape {
             this.strokeSpring.position + this.strokeW / 4;
 
         if (this.countCenter === 4) {
+          noLoop();
           setTimeout(() => {
             sendSequenceNextSignal();
-            noLoop();
           }, 2000); // Wait for 3 seconds
         }
       }

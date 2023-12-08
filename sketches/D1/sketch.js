@@ -68,9 +68,9 @@ window.draw = function () {
 
   if (isFinished) {
     fill(255, 255, 0);
+    noLoop();
     setTimeout(() => {
       sendSequenceNextSignal();
-      noLoop();
     }, 500);
     // circle(centerX, centerY, objSize);
   }

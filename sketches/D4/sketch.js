@@ -26,6 +26,9 @@ window.setup = function () {
   const objSize = sceneSize / 2;
   pg = createGraphics(objSize, objSize);
   pg.pixelDensity(1);
+
+  Sound.setVolume(0);
+  Sound.loop();
 };
 
 window.windowResized = function () {
@@ -34,13 +37,24 @@ window.windowResized = function () {
 
 window.mousePressed = function () {
   isDrawing = true;
+  Sound.play();
+};
+
+window.mouseReleased = function () {
+  isDrawing = false;
+
+  lastPointX = undefined;
+  lastPointY = undefined;
+  Sound.stop();
 };
 
 function soundEffect() {
   mouseXSpeed = abs(pmouseX - mouseX);
-  var volume = map(mouseXSpeed, 0, width, 0, 20);
+  var volume = map(mouseXSpeed, 0, 100, 0, 1);
   Sound.setVolume(volume);
-  console.log("sound on");
+
+  //console.log(volume);
+  //console.log("sound on");
 }
 
 window.draw = function () {
@@ -153,7 +167,7 @@ window.draw = function () {
   }
 
   alpha /= pixelCount;
-  console.log(alpha);
+  //console.log(alpha);
 
   image(pg, centerX - objSize / 2, centerY - objSize / 2);
 
@@ -163,9 +177,10 @@ window.draw = function () {
     // noStroke();
     // circle(centerX, centerY, objSize * endCircleScale);
 
+    noLoop();
+
     setTimeout(() => {
       sendSequenceNextSignal();
-      noLoop();
     }, 500);
   }
 };
