@@ -136,7 +136,7 @@ class Shape {
           // noLoop();
           setTimeout(() => {
             sendSequenceNextSignal();
-          }, 400); // Wait for 3 seconds
+          }, 1000); // Wait for 3 seconds
         }
       }
     });

@@ -73,6 +73,7 @@ window.draw = function () {
   rectMode(CENTER);
   strokeWeight(strokeW);
   stroke(0);
+
   endCrossScale = lerp(endCrossScale, 0.965, 0.1);
   line(
     centerX - (objSize / 2) * endCrossScale,
